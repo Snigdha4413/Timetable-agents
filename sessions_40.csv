@@ -1,0 +1,41 @@
+dept,faculty,class_size,preferred_day
+Computer Science,Prof 1,50,Tue
+Data Science,Prof 2,60,Mon
+Civil,Prof 3,30,Fri
+Mathematics & Science,Prof 4,30,Wed
+Artificial Intelligence,Prof 5,30,Fri
+Mechanical,Prof 6,40,Mon
+Computer Science,Prof 7,30,Thu
+Data Science,Prof 8,60,Mon
+Civil,Prof 9,40,Mon
+Mathematics & Science,Prof 10,60,Mon
+Artificial Intelligence,Prof 11,30,Tue
+Mechanical,Prof 12,30,Fri
+Computer Science,Prof 13,60,Mon
+Data Science,Prof 14,40,Mon
+Civil,Prof 15,40,Wed
+Mathematics & Science,Prof 16,60,Tue
+Artificial Intelligence,Prof 17,30,Fri
+Mechanical,Prof 18,50,Fri
+Computer Science,Prof 19,40,Mon
+Data Science,Prof 20,40,Wed
+Civil,Prof 21,30,Fri
+Mathematics & Science,Prof 22,30,Fri
+Artificial Intelligence,Prof 23,30,Fri
+Mechanical,Prof 24,40,Thu
+Computer Science,Prof 1,60,Wed
+Data Science,Prof 2,60,Fri
+Civil,Prof 3,60,Wed
+Mathematics & Science,Prof 4,50,Tue
+Artificial Intelligence,Prof 5,40,Tue
+Mechanical,Prof 6,30,Fri
+Computer Science,Prof 7,50,Fri
+Data Science,Prof 8,60,Wed
+Civil,Prof 9,60,Wed
+Mathematics & Science,Prof 10,30,Mon
+Artificial Intelligence,Prof 11,60,Tue
+Mechanical,Prof 12,50,Tue
+Computer Science,Prof 13,60,Thu
+Data Science,Prof 14,30,Mon
+Civil,Prof 15,50,Wed
+Mathematics & Science,Prof 16,50,Fri
