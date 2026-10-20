@@ -6,8 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from bridge import build_scenario, warnings_for, parse_sessions_csv, InputError
-from runner import (run_schedule, timetable_rows, unplaced_rows,
-                    DEFAULT_METHOD, TRAINED_SESSIONS)
+from runner import run_schedule, timetable_rows, DEFAULT_METHOD, TRAINED_SESSIONS
 from presets import PRESETS
 from theme import inject_theme, hero, mascot, gen_overlay, treasure_pop
 from scheduler import DAYS, SLOTS
@@ -238,7 +237,6 @@ if st.button("Generate timetable", type="primary"):
         t0 = time.time()
         grid, m = run_schedule(sc, method)
         S.result = {"sc": sc, "m": m, "df": pd.DataFrame(timetable_rows(sc, grid)),
-                    "unplaced": pd.DataFrame(unplaced_rows(sc, grid)),
                     "method": method, "sig": sig}
         time.sleep(max(0.0, 2.2 - (time.time() - t0)))   # let the captain finish his bow
     except InputError as e:
@@ -271,16 +269,6 @@ if res:
                    "faculty or student groups.")
     else:
         st.error("Constraint violations found — this is a bug, please report.")
-
-    unplaced = res.get("unplaced")
-    if unplaced is not None and len(unplaced):
-        st.warning(f"{len(unplaced)} of {len(sc.sessions)} sessions could not be "
-                   "placed. They are listed below and are missing from the "
-                   "timetable views. Session numbers match the All sessions table.")
-        st.dataframe(unplaced, width="stretch", hide_index=True)
-        st.download_button("Download unplaced sessions CSV",
-                           unplaced.to_csv(index=False), "unplaced_sessions.csv",
-                           "text/csv", key="dl_unplaced")
 
     view = st.radio("View by", ["Room", "Department", "Full list"], horizontal=True)
     if view == "Full list":
