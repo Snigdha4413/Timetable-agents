@@ -116,3 +116,53 @@ def timetable_rows(sc, grid):
                      "Room": room.name,
                      "Preference": round(s.pref(day, slot), 2)})
     return sorted(rows, key=lambda r: (DAYS.index(r["Day"]), r["Period"]))
+
+
+def unplaced_rows(sc, grid):
+    """Sessions that did NOT make it into the timetable, each with a
+    plain-language reason. Empty list when everything was placed."""
+    rows = []
+    empty_cells = len(DAYS) * len(SLOTS) * len(sc.rooms) - len(grid.placed)
+    for s in sc.sessions:
+        if s.sid in grid.placed:
+            continue
+        fac = sc.faculty_by_id(s.faculty_id)
+        open_cells = grid.legal_cells(s)
+
+        if open_cells:
+            reason = (f"{len(open_cells)} legal slot(s) were still open, but the "
+                      "agents ran out of negotiation rounds before claiming one.")
+        else:
+            # Walk every period and record the first rule that blocks it.
+            off = fac_busy = dept_busy = rooms_full = 0
+            for d in DAYS:
+                for sl in SLOTS:
+                    if not fac.is_free(d, sl):
+                        off += 1
+                    elif (s.faculty_id, d, sl) in grid.faculty_busy:
+                        fac_busy += 1
+                    elif (s.dept, d, sl) in grid.dept_busy:
+                        dept_busy += 1
+                    else:
+                        rooms_full += 1
+            parts = []
+            if off:
+                parts.append(f"{fac.name} is unavailable in {off}")
+            if fac_busy:
+                parts.append(f"{fac.name} is already teaching in {fac_busy}")
+            if dept_busy:
+                parts.append(f"{s.dept} already has a class in {dept_busy}")
+            if rooms_full:
+                parts.append(f"every room with {s.class_size}+ seats is booked "
+                             f"in the other {rooms_full}")
+            reason = ("No legal slot left. Of the 30 periods: "
+                      + "; ".join(parts) + ".")
+            if empty_cells:
+                reason += (f" The grid still has {empty_cells} empty cell(s), "
+                           "but none at a usable time in a room that fits.")
+
+        rows.append({"Session": s.sid, "Department": s.dept,
+                     "Faculty": fac.name, "Students": s.class_size,
+                     "Preferred day": s.preferred_day or "-",
+                     "Why not placed": reason})
+    return rows
