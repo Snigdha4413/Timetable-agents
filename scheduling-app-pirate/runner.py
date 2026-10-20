@@ -2,13 +2,14 @@
 import pickle
 from collections import defaultdict
 import numpy as np
+from pathlib import Path
 
 from scheduler import (Grid, DAYS, SLOTS, validate, run_episode, run_baseline,
                        make_dept_agents, make_room_agents, ACTION_NAMES,
                        RoomAgent)
 
-with open("trained_agents.pkl", "rb") as f:
-    BLOB = pickle.load(f)
+with open(Path(__file__).parent / "trained_agents.pkl", "rb") as f:
+       BLOB = pickle.load(f)
 
 DEFAULT_METHOD = BLOB.get("default_method", "q_learning")
 TRAINED_SESSIONS = BLOB.get("trained_sessions", 60)
