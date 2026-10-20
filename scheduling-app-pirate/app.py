@@ -326,7 +326,13 @@ if res:
         st.warning(f"{len(unplaced)} of {len(sc.sessions)} sessions could not be "
                    "placed. They are listed below and are missing from the "
                    "timetable views. Session numbers match the All sessions table.")
-        st.dataframe(unplaced, width="stretch", hide_index=True)
+        st.dataframe(unplaced.drop(columns=["Why not placed"]),
+                     width="stretch", hide_index=True)
+        st.markdown("**Why each one was not placed**")
+        for _, r in unplaced.iterrows():
+            st.markdown(f"- **Session {r['Session']}** ({r['Department']}, "
+                        f"{r['Faculty']}, {r['Students']} students): "
+                        f"{r['Why not placed']}")
         st.download_button("Download unplaced sessions CSV",
                            unplaced.to_csv(index=False), "unplaced_sessions.csv",
                            "text/csv", key="dl_unplaced")
