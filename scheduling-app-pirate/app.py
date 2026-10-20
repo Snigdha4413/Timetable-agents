@@ -11,6 +11,56 @@ from presets import PRESETS
 from theme import inject_theme, hero, mascot, gen_overlay, treasure_pop
 from scheduler import DAYS, SLOTS
 
+
+def unplaced_rows(sc, grid):
+    """Sessions that did NOT make it into the timetable, each with a
+    plain-language reason. Empty list when everything was placed."""
+    rows = []
+    empty_cells = len(DAYS) * len(SLOTS) * len(sc.rooms) - len(grid.placed)
+    for s in sc.sessions:
+        if s.sid in grid.placed:
+            continue
+        fac = sc.faculty_by_id(s.faculty_id)
+        open_cells = grid.legal_cells(s)
+
+        if open_cells:
+            reason = (f"{len(open_cells)} legal slot(s) were still open, but the "
+                      "agents ran out of negotiation rounds before claiming one.")
+        else:
+            # Walk every period and record the first rule that blocks it.
+            off = fac_busy = dept_busy = rooms_full = 0
+            for d in DAYS:
+                for sl in SLOTS:
+                    if not fac.is_free(d, sl):
+                        off += 1
+                    elif (s.faculty_id, d, sl) in grid.faculty_busy:
+                        fac_busy += 1
+                    elif (s.dept, d, sl) in grid.dept_busy:
+                        dept_busy += 1
+                    else:
+                        rooms_full += 1
+            parts = []
+            if off:
+                parts.append(f"{fac.name} is unavailable in {off}")
+            if fac_busy:
+                parts.append(f"{fac.name} is already teaching in {fac_busy}")
+            if dept_busy:
+                parts.append(f"{s.dept} already has a class in {dept_busy}")
+            if rooms_full:
+                parts.append(f"every room with {s.class_size}+ seats is booked "
+                             f"in the other {rooms_full}")
+            reason = ("No legal slot left. Of the 30 periods: "
+                      + "; ".join(parts) + ".")
+            if empty_cells:
+                reason += (f" The grid still has {empty_cells} empty cell(s), "
+                           "but none at a usable time in a room that fits.")
+
+        rows.append({"Session": s.sid, "Department": s.dept,
+                     "Faculty": fac.name, "Students": s.class_size,
+                     "Preferred day": s.preferred_day or "-",
+                     "Why not placed": reason})
+    return rows
+
 st.set_page_config(page_title="Course Scheduling Agents", page_icon="🏴‍☠️", layout="wide")
 inject_theme()
 st.title("Multi-Agent Course Scheduling")
@@ -237,6 +287,7 @@ if st.button("Generate timetable", type="primary"):
         t0 = time.time()
         grid, m = run_schedule(sc, method)
         S.result = {"sc": sc, "m": m, "df": pd.DataFrame(timetable_rows(sc, grid)),
+                    "unplaced": pd.DataFrame(unplaced_rows(sc, grid)),
                     "method": method, "sig": sig}
         time.sleep(max(0.0, 2.2 - (time.time() - t0)))   # let the captain finish his bow
     except InputError as e:
@@ -269,6 +320,16 @@ if res:
                    "faculty or student groups.")
     else:
         st.error("Constraint violations found — this is a bug, please report.")
+
+    unplaced = res.get("unplaced")
+    if unplaced is not None and len(unplaced):
+        st.warning(f"{len(unplaced)} of {len(sc.sessions)} sessions could not be "
+                   "placed. They are listed below and are missing from the "
+                   "timetable views. Session numbers match the All sessions table.")
+        st.dataframe(unplaced, width="stretch", hide_index=True)
+        st.download_button("Download unplaced sessions CSV",
+                           unplaced.to_csv(index=False), "unplaced_sessions.csv",
+                           "text/csv", key="dl_unplaced")
 
     view = st.radio("View by", ["Room", "Department", "Full list"], horizontal=True)
     if view == "Full list":
