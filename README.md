@@ -1,6 +1,6 @@
 # Multi-Agent Course Scheduling
 
-**Live demo: [courseschedulingaiagent.streamlit.app](https://courseschedulingaiagent.streamlit.app/)**
+**Live demo: https://timetable-agents.streamlit.app/**
 
 Department and room agents learn to negotiate a university timetable using
 reinforcement learning. Every timetable produced satisfies all hard
